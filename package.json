@@ -1,0 +1,11 @@
+{
+  "name": "nestjs",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:silver-ye/nestjs.git",
+  "author": "sef951@gmail.com <sef951@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
