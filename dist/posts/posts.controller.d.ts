@@ -1,14 +1,9 @@
-interface PostModel {
-    id: number;
-    author: string;
-    title: string;
-    content: string;
-    likeCount: number;
-    commentCount: number;
-}
+import { PostsService } from './posts.service';
 export declare class PostsController {
-    getPosts(): PostModel[];
-    getPost(id: string): PostModel;
+    private readonly postService;
+    constructor(postService: PostsService);
+    getPosts(): import("./posts.service").PostModel[];
+    getPost(id: string): import("./posts.service").PostModel;
     postPosts(author: string, title: string, content: string): {
         id: number;
         author: string;
@@ -17,7 +12,6 @@ export declare class PostsController {
         likeCount: number;
         commentCount: number;
     };
-    patchPost(id: string, author?: string, title?: string, content?: string): PostModel;
-    deletePost(id: string): string;
+    patchPost(id: string, author?: string, title?: string, content?: string): import("./posts.service").PostModel;
+    deletePost(id: string): number;
 }
-export {};
