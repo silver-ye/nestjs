@@ -1,0 +1,12 @@
+services:
+  postgres:
+    image: postgres:15 # 이미지이름:이미지버전
+    restart: always
+    volumes: # ./postgres-data라는 현재 폴더에서 이미지안에 위치한 /var/lib/postgresql/data와 싱크를 맞춤
+      - ./postgres-data:/var/lib/postgresql/data
+    ports: # 현재 5432포트와 이미지의 5432포트를 맞춤
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
