@@ -26,21 +26,20 @@ export class PostsController {
 
   @Post()
   postPosts(
-    @Body('author') author: string,
+    @Body('authorId') authorId: number,
     @Body('title') title: string,
     @Body('content') content: string,
   ) {
-    return this.postService.creatPost(author, title, content);
+    return this.postService.creatPost(authorId, title, content);
   }
 
   @Patch(':id')
   patchPost(
     @Param('id') id: string,
-    @Body('author') author?: string,
     @Body('title') title?: string,
     @Body('content') content?: string,
   ) {
-    return this.postService.updatePost(+id, author, title, content);
+    return this.postService.updatePost(+id, title, content);
   }
 
   @Delete(':id')
