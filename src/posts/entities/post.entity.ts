@@ -1,11 +1,16 @@
+import { BaseModel } from 'src/common/entities/base.entity';
 import { UsersModel } from 'src/users/entities/users.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 @Entity()
-export class PostsModel {
-  @PrimaryGeneratedColumn() // 구분할 수 있는 중복이 없는 값이 필요함
-  id: number;
-
+export class PostsModel extends BaseModel {
   // 1. UserModel과 연동
   // 2. Null 불가
   @ManyToOne(() => UsersModel, (user) => user.posts, {
