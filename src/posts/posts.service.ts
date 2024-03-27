@@ -7,6 +7,7 @@ import { updatePostDto } from './dto/update-post.dto';
 import { PaginatePostDto } from './dto/paginate-post.dto';
 import { last } from 'rxjs';
 import { HOST, PROTOCOL } from 'src/common/const/env.const';
+import { CommonService } from 'src/common/common.service';
 
 export interface PostModel {
   id: number;
@@ -49,6 +50,7 @@ export class PostsService {
   constructor(
     @InjectRepository(PostsModel)
     private readonly postRepository: Repository<PostsModel>,
+    private readonly commonService: CommonService,
   ) {}
 
   async getAllPosts() {
@@ -67,11 +69,14 @@ export class PostsService {
   }
 
   async paginatePosts(dto: PaginatePostDto) {
-    if (dto.page) {
-      return this.pagePaginatePosts(dto);
-    } else {
-      return this.cursorPaginatePosts(dto);
-    }
+    return this.commonService.paginate(
+      dto,
+      this.postRepository,
+      {
+        relations: ['author'],
+      },
+      'posts',
+    );
   }
 
   async pagePaginatePosts(dto: PaginatePostDto) {
@@ -79,7 +84,7 @@ export class PostsService {
       skip: dto.take * (dto.page - 1),
       take: dto.take,
       order: {
-        createdAt: dto.order__createAt,
+        createdAt: dto.order__createdAt,
       },
     });
 
@@ -92,16 +97,16 @@ export class PostsService {
   async cursorPaginatePosts(dto: PaginatePostDto) {
     const where: FindOptionsWhere<PostsModel> = {};
 
-    if (dto.where__id_less_than) {
-      where.id = LessThan(dto.where__id_less_than);
-    } else if (dto.where__id_more_than) {
-      where.id = MoreThan(dto.where__id_more_than);
+    if (dto.where__id__less_than) {
+      where.id = LessThan(dto.where__id__less_than);
+    } else if (dto.where__id__more_than) {
+      where.id = MoreThan(dto.where__id__more_than);
     }
 
     const posts = await this.postRepository.find({
       where,
       order: {
-        createdAt: dto.order__createAt,
+        createdAt: dto.order__createdAt,
       },
       take: dto.take,
     });
@@ -116,17 +121,20 @@ export class PostsService {
     if (nextUrl) {
       for (const key of Object.keys(dto)) {
         if (dto[key]) {
-          if (key !== 'where__id_more_than' && key !== 'where__id_less_than') {
+          if (
+            key !== 'where__id__more_than' &&
+            key !== 'where__id__less_than'
+          ) {
             nextUrl.searchParams.append(key, dto[key]);
           }
         }
       }
       let key = null;
 
-      if (dto.order__createAt === 'ASC') {
-        key = 'where__id_more_than';
+      if (dto.order__createdAt === 'ASC') {
+        key = 'where__id__more_than';
       } else {
-        key = 'where__id_less_than';
+        key = 'where__id__less_than';
       }
 
       nextUrl.searchParams.append(key, lastItem.id.toString());
