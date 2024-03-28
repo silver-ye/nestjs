@@ -22,8 +22,11 @@ import { PaginatePostDto } from './dto/paginate-post.dto';
 import { UsersModel } from 'src/users/entities/users.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ImageModelType } from 'src/common/entities/image.entity';
-import { DataSource } from 'typeorm';
+import { DataSource, QueryRunner as QR } from 'typeorm';
 import { PostImagesService } from './image/images.service';
+import { LogInterceptor } from 'src/common/interceptor/log.interceptor';
+import { TranactionInterceptor } from 'src/common/interceptor/transaction.interceptor';
+import { QueryRunner } from 'src/common/decorator/query-runner-decorator';
 
 @Controller('posts')
 export class PostsController {
@@ -34,6 +37,7 @@ export class PostsController {
   ) {}
 
   @Get()
+  @UseInterceptors(LogInterceptor)
   getPosts(@Query() query: PaginatePostDto) {
     return this.postService.paginatePosts(query);
   }
@@ -53,43 +57,27 @@ export class PostsController {
 
   @Post()
   @UseGuards(AccessTokenGuard)
+  @UseInterceptors(TranactionInterceptor)
   async postPosts(
     @User('id') userId: number,
     @Body() body: CreatePostDto,
-    // @Body('isPublic', new DefaultValuePipe(true)) isPublic: boolean,
+    @QueryRunner() qr: QR,
   ) {
-    const qr = this.dataSource.createQueryRunner(); // 쿼리 러너 생성 : 쿼리를 묶어주는 역할
+    const post = await this.postService.creatPost(userId, body, qr);
 
-    await qr.connect();
-
-    await qr.startTransaction(); // 쿼리 러너를 사용하면 트랙잭션 안에서 데이터베이스 액션을 실행 할 수 있음
-
-    try {
-      const post = await this.postService.creatPost(userId, body, qr);
-
-      for (let i = 0; i < body.images.length; i++) {
-        await this.postImagesService.createPostImage(
-          {
-            post,
-            order: i,
-            path: body.images[i],
-            type: ImageModelType.POST_IMAGE,
-          },
-          qr,
-        );
-      }
-
-      await qr.commitTransaction();
-      await qr.release(); // 쿼리 러너 종료
-
-      return this.postService.getPostById(post.id);
-    } catch (err) {
-      // 에러가 나면, 트랙잭션을 종료하고 되돌려야함
-      await qr.rollbackTransaction();
-      await qr.release();
-
-      throw new InternalServerErrorException(`${err}`);
+    for (let i = 0; i < body.images.length; i++) {
+      await this.postImagesService.createPostImage(
+        {
+          post,
+          order: i,
+          path: body.images[i],
+          type: ImageModelType.POST_IMAGE,
+        },
+        qr,
+      );
     }
+
+    return this.postService.getPostById(post.id, qr);
   }
 
   @Patch(':id')
