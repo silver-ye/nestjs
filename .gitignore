@@ -39,4 +39,4 @@ lerna-debug.log*
 postgres-data
 .vscode
 .env
-.public
+/public
