@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  InternalServerErrorException,
   Param,
   ParseIntPipe,
   Patch,
@@ -20,10 +21,17 @@ import { updatePostDto } from './dto/update-post.dto';
 import { PaginatePostDto } from './dto/paginate-post.dto';
 import { UsersModel } from 'src/users/entities/users.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { ImageModelType } from 'src/common/entities/image.entity';
+import { DataSource } from 'typeorm';
+import { PostImagesService } from './image/images.service';
 
 @Controller('posts')
 export class PostsController {
-  constructor(private readonly postService: PostsService) {}
+  constructor(
+    private readonly postService: PostsService,
+    private readonly postImagesService: PostImagesService,
+    private readonly dataSource: DataSource,
+  ) {}
 
   @Get()
   getPosts(@Query() query: PaginatePostDto) {
@@ -50,9 +58,38 @@ export class PostsController {
     @Body() body: CreatePostDto,
     // @Body('isPublic', new DefaultValuePipe(true)) isPublic: boolean,
   ) {
-    await this.postService.createPostImage(body);
+    const qr = this.dataSource.createQueryRunner(); // 쿼리 러너 생성 : 쿼리를 묶어주는 역할
 
-    return this.postService.creatPost(userId, body);
+    await qr.connect();
+
+    await qr.startTransaction(); // 쿼리 러너를 사용하면 트랙잭션 안에서 데이터베이스 액션을 실행 할 수 있음
+
+    try {
+      const post = await this.postService.creatPost(userId, body, qr);
+
+      for (let i = 0; i < body.images.length; i++) {
+        await this.postImagesService.createPostImage(
+          {
+            post,
+            order: i,
+            path: body.images[i],
+            type: ImageModelType.POST_IMAGE,
+          },
+          qr,
+        );
+      }
+
+      await qr.commitTransaction();
+      await qr.release(); // 쿼리 러너 종료
+
+      return this.postService.getPostById(post.id);
+    } catch (err) {
+      // 에러가 나면, 트랙잭션을 종료하고 되돌려야함
+      await qr.rollbackTransaction();
+      await qr.release();
+
+      throw new InternalServerErrorException(`${err}`);
+    }
   }
 
   @Patch(':id')
