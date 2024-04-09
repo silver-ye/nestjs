@@ -27,7 +27,7 @@ import { ImageModelType } from 'src/common/entity/image.entity';
 import { DataSource, QueryRunner as QR } from 'typeorm';
 import { PostImagesService } from './image/images.service';
 import { LogInterceptor } from 'src/common/interceptor/log.interceptor';
-import { TranactionInterceptor } from 'src/common/interceptor/transaction.interceptor';
+import { TransactionInterceptor } from 'src/common/interceptor/transaction.interceptor';
 import { QueryRunner } from 'src/common/decorator/query-runner-decorator';
 import { HttpExceptionFilter } from 'src/common/exception-filter/http.exception-filter';
 import { Roles } from 'src/users/decorator/roles.decorator,';
@@ -64,7 +64,7 @@ export class PostsController {
   }
 
   @Post()
-  @UseInterceptors(TranactionInterceptor)
+  @UseInterceptors(TransactionInterceptor)
   async postPosts(
     @User('id') userId: number,
     @Body() body: CreatePostDto,
