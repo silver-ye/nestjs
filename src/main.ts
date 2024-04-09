@@ -17,7 +17,7 @@ async function bootstrap() {
     }),
   ); // 모든 클래스 validator 사용 가능
 
-  app.useGlobalFilters(new HttpExceptionFilter());
+  // app.useGlobalFilters(new HttpExceptionFilter()); // 필터를 글로벌하게 적용할 수 있음
 
   await app.listen(3000);
 }

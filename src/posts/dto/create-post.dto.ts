@@ -1,5 +1,5 @@
 import { IsOptional, IsString } from 'class-validator';
-import { PostsModel } from '../entities/post.entity';
+import { PostsModel } from '../entity/post.entity';
 import { PickType } from '@nestjs/mapped-types';
 
 // Pick, Omit, Parital -> Type 반환

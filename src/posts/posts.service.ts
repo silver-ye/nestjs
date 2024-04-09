@@ -10,7 +10,7 @@ import {
   QueryRunner,
   Repository,
 } from 'typeorm';
-import { PostsModel } from './entities/post.entity';
+import { PostsModel } from './entity/post.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreatePostDto } from './dto/create-post.dto';
 import { updatePostDto } from './dto/update-post.dto';
@@ -22,7 +22,7 @@ import { POST_IMAGE_PATH, TEMP_FOLDER_PATH } from 'src/common/const/path.const';
 import { basename, join } from 'path';
 import { promises } from 'fs';
 import { CreatePostImageDto } from './image/dto/create-image.dto';
-import { ImageModel } from 'src/common/entities/image.entity';
+import { ImageModel } from 'src/common/entity/image.entity';
 import { DEFAULT_POST_FIND_OPTIONS } from 'src/posts/const/default-post-find-options.const';
 
 @Injectable()
@@ -143,5 +143,13 @@ export class PostsService {
     await this.postRepository.delete(postId);
 
     return postId;
+  }
+
+  async checkPostExistsById(id: number) {
+    return this.postRepository.exists({
+      where: {
+        id,
+      },
+    });
   }
 }

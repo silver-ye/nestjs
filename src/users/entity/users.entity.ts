@@ -9,8 +9,8 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { RolesEnum } from '../const/roles.const';
-import { PostsModel } from 'src/posts/entities/post.entity';
-import { BaseModel } from 'src/common/entities/base.entity';
+import { PostsModel } from 'src/posts/entity/post.entity';
+import { BaseModel } from 'src/common/entity/base.entity';
 import { IsEmail, IsString, Length } from 'class-validator';
 import { ValidationArguments } from 'class-validator';
 import { lengthValidationMessage } from 'src/common/validation-message/length-validation.message';
@@ -19,6 +19,7 @@ import { emailValidationMessage } from 'src/common/validation-message/email-vali
 import { Exclude, Expose } from 'class-transformer';
 import { ChatsModel } from 'src/chats/entity/chats.entity';
 import { MessagesModel } from 'src/chats/messages/entity/messages.entity';
+import { CommentsModel } from 'src/posts/comments/entity/comments.entity';
 
 @Entity()
 // @Exclude() // 클래스 전체에도 exclude 가능하고, 원하는 것만 expose하면 됨
@@ -93,4 +94,7 @@ export class UsersModel extends BaseModel {
 
   @OneToMany(() => MessagesModel, (message) => message.author)
   messages: MessagesModel;
+
+  @OneToMany(() => CommentsModel, (comment) => comment.author)
+  postComments: CommentsModel[];
 }
