@@ -20,6 +20,7 @@ import { Exclude, Expose } from 'class-transformer';
 import { ChatsModel } from 'src/chats/entity/chats.entity';
 import { MessagesModel } from 'src/chats/messages/entity/messages.entity';
 import { CommentsModel } from 'src/posts/comments/entity/comments.entity';
+import { UserFollwersModel } from './user-followers.entity';
 
 @Entity()
 // @Exclude() // 클래스 전체에도 exclude 가능하고, 원하는 것만 expose하면 됨
@@ -97,4 +98,13 @@ export class UsersModel extends BaseModel {
 
   @OneToMany(() => CommentsModel, (comment) => comment.author)
   postComments: CommentsModel[];
+
+  // 내가 팔로우하는 사람들
+  @OneToMany(() => UserFollwersModel, (ufm) => ufm.follower)
+  @JoinTable()
+  followers: UserFollwersModel[];
+
+  // 나를 팔로우하는 사람들
+  @OneToMany(() => UserFollwersModel, (ufm) => ufm.followee)
+  followees: UserFollwersModel[];
 }
