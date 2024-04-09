@@ -152,4 +152,18 @@ export class PostsService {
       },
     });
   }
+
+  async isPostMine(userId: number, postId: number) {
+    return this.postRepository.exists({
+      where: {
+        id: postId,
+        author: {
+          id: userId,
+        },
+      },
+      relations: {
+        author: true,
+      },
+    });
+  }
 }
