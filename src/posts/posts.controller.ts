@@ -30,6 +30,9 @@ import { LogInterceptor } from 'src/common/interceptor/log.interceptor';
 import { TranactionInterceptor } from 'src/common/interceptor/transaction.interceptor';
 import { QueryRunner } from 'src/common/decorator/query-runner-decorator';
 import { HttpExceptionFilter } from 'src/common/exception-filter/http.exception-filter';
+import { Roles } from 'src/users/decorator/roles.decorator,';
+import { RolesEnum } from 'src/users/const/roles.const';
+import { IsPublic } from 'src/common/decorator/is-public.decorator';
 
 @Controller('posts')
 export class PostsController {
@@ -40,13 +43,13 @@ export class PostsController {
   ) {}
 
   @Get()
+  @IsPublic()
   // @UseInterceptors(LogInterceptor)
   getPosts(@Query() query: PaginatePostDto) {
     return this.postService.paginatePosts(query);
   }
 
   @Post('random')
-  @UseGuards(AccessTokenGuard)
   async postPostsRadom(@User() user: UsersModel) {
     await this.postService.generatePosts(user.id);
 
@@ -54,12 +57,12 @@ export class PostsController {
   }
 
   @Get(':id')
+  @IsPublic()
   getPost(@Param('id', ParseIntPipe) id: number) {
     return this.postService.getPostById(id);
   }
 
   @Post()
-  @UseGuards(AccessTokenGuard)
   @UseInterceptors(TranactionInterceptor)
   async postPosts(
     @User('id') userId: number,
@@ -92,6 +95,7 @@ export class PostsController {
   }
 
   @Delete(':id')
+  @Roles(RolesEnum.ADMIN)
   deletePost(@Param('id', ParseIntPipe) id: number) {
     return this.postService.deletePost(id);
   }

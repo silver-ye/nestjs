@@ -33,7 +33,9 @@ export class PostsModel extends BaseModel {
   @Column()
   commentCount: number;
 
-  @OneToMany((type) => ImageModel, (image) => image.post)
+  @OneToMany((type) => ImageModel, (image) => image.post, {
+    onDelete: 'CASCADE',
+  })
   images: ImageModel[];
 
   @OneToMany(() => CommentsModel, (comment) => comment.post)
